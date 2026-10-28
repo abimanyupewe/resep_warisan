@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FontSize {
+  normal
+  besar
+  sangat_besar
+}
+
+enum RecipeStatus {
+  draf
+  perlu_dicek
+  lengkap
+}
+
+enum Difficulty {
+  mudah
+  sedang
+  sulit
+}
+
+enum PhotoKind {
+  masakan
+  tulisan_asli
+  sampul
+  persembahan
+  tokoh
+}
+
+// --- Better Auth (email+password, plugin admin). Id berupa string bawaan Better Auth, bukan uuid.
+// Akun nonaktif (F02) memakai `banned` dari plugin admin.
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String    @default("anggota")
+  banned        Boolean   @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  fontSize      FontSize  @default(normal)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions       Session[]
+  accounts       Account[]
+  recipesCreated Recipe[]         @relation("RecipeCreatedBy")
+  recipesUpdated Recipe[]         @relation("RecipeUpdatedBy")
+  revisions      RecipeRevision[]
+  photos         Photo[]
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+// --- Data aplikasi (bab 7 dokumen)
+// Pemilik resep (mis. Uti) dipisah dari User karena tidak harus punya akun.
+model Person {
+  id           String  @id @default(uuid())
+  name         String
+  relationNote String?
+  photoId      String? @unique
+  photo        Photo?  @relation("PersonPhoto", fields: [photoId], references: [id])
+  sortOrder    Int     @default(0)
+
+  recipes Recipe[]
+}
+
+model Category {
+  id        String @id @default(uuid())
+  name      String
+  sortOrder Int    @default(0)
+
+  recipes Recipe[]
+}
+
+model Recipe {
+  id              String       @id @default(uuid())
+  title           String
+  categoryId      String?
+  category        Category?    @relation(fields: [categoryId], references: [id])
+  ownerPersonId   String?
+  owner           Person?      @relation(fields: [ownerPersonId], references: [id])
+  // Satu bahan / satu langkah per baris, dipisah saat tampil.
+  ingredientsText String?
+  stepsText       String?
+  originStory     String?
+  memoryNote      String?
+  servings        String?
+  cookTime        String?
+  difficulty      Difficulty?
+  status          RecipeStatus @default(draf)
+  createdById     String
+  createdBy       User         @relation("RecipeCreatedBy", fields: [createdById], references: [id])
+  updatedById     String
+  updatedBy       User         @relation("RecipeUpdatedBy", fields: [updatedById], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  // Penghapusan lunak: semua kueri daftar harus menyaring deletedAt = null.
+  deletedAt       DateTime?
+
+  photos    Photo[]
+  revisions RecipeRevision[]
+
+  @@index([categoryId])
+  @@index([ownerPersonId])
+  @@index([deletedAt])
+}
+
+model Photo {
+  id                 String    @id @default(uuid())
+  // Kosong untuk foto sampul, persembahan, atau tokoh.
+  recipeId           String?
+  recipe             Recipe?   @relation(fields: [recipeId], references: [id])
+  kind               PhotoKind
+  cloudinaryPublicId String
+  width              Int
+  height             Int
+  caption            String?
+  includeInBook      Boolean   @default(true)
+  sortOrder          Int       @default(0)
+  uploadedById       String
+  uploadedBy         User      @relation(fields: [uploadedById], references: [id])
+  createdAt          DateTime  @default(now())
+
+  personPhotoOf  Person?      @relation("PersonPhoto")
+  bookCover      BookProfile? @relation("BookCover")
+  bookDedication BookProfile? @relation("BookDedication")
+
+  @@index([recipeId])
+}
+
+// Snapshot lengkap resep setiap kali disimpan; tidak pernah dihapus.
+model RecipeRevision {
+  id         String   @id @default(uuid())
+  recipeId   String
+  recipe     Recipe   @relation(fields: [recipeId], references: [id])
+  snapshot   Json
+  editedById String
+  editedBy   User     @relation(fields: [editedById], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([recipeId, createdAt])
+}
+
+// Satu baris per buku.
+model BookProfile {
+  id                String   @id @default(uuid())
+  title             String
+  subtitle          String?
+  coverPhotoId      String?  @unique
+  coverPhoto        Photo?   @relation("BookCover", fields: [coverPhotoId], references: [id])
+  dedicationText    String?
+  dedicationPhotoId String?  @unique
+  dedicationPhoto   Photo?   @relation("BookDedication", fields: [dedicationPhotoId], references: [id])
+  foreword          String?
+  updatedAt         DateTime @updatedAt
+}
