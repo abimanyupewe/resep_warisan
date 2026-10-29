@@ -21,7 +21,7 @@ Still the untouched `create-next-app` scaffold: App Router in `app/` (`layout.ts
 
 `dev/dokumen/` (Indonesian, one file per chapter, indexed in `dev/dokumen/README.md`) is the source of truth for what to build. Read the relevant chapter before implementing a feature (e.g. `07-rancangan-data.md` for the schema, `06-kebutuhan-dan-desain.md` for UI rules). Its decisions are tagged **[K]** (decided by the developer) or **[A]** (assumption, changeable). Key constraints:
 
-- "Dapur Uti": a closed family recipe platform, no public signup, accounts created by an admin (email + password, long sessions, admin resets passwords).
+- "Dapur Uti": a family recipe platform. Anyone can self-register at `/daftar` and is active and signed in immediately (no approval); Better Auth's own sign-up endpoint stays disabled and signups are capped per day in `app/daftar/actions.ts`. `lib/pending.ts` (approval flow) is still used by the admin Anggota filter but no new accounts get that status. Admins can also create accounts directly (email + password, long sessions, admin resets passwords).
 - Mobile-first (Android), installable PWA. UI text is Indonesian.
 - Stack: Next.js for frontend and backend, Vercel Hobby hosting, Neon Postgres, Cloudinary for photos (compressed before upload), Google Drive daily backup. Everything must stay on free tiers.
 - Every save creates a version (restorable); deletes go to a trash first; all members can edit all recipes.

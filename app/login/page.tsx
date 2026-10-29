@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LogIn } from "lucide-react";
 import { Flash } from "@/app/admin/flash";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,8 @@ export const metadata = { title: "Masuk · Dapur Uti" };
 // Membaca searchParams (pesan galat) saat request, jadi tidak punya cangkang statis.
 export const instant = false;
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; ok?: string }> }) {
+  const { error, ok } = await searchParams;
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted p-4">
       <div className="flex w-full max-w-md flex-col gap-6">
@@ -21,7 +22,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </header>
         <Card>
           <CardContent className="flex flex-col gap-4">
-            <Flash error={error} />
+            <Flash ok={ok} error={error} />
             <form action={login} className="flex flex-col gap-4">
               <label className="flex flex-col gap-1 font-semibold">
                 Email
@@ -35,7 +36,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </form>
           </CardContent>
         </Card>
-        <p className="text-center text-sm text-muted-foreground">Belum punya akun atau lupa password? Hubungi admin keluarga.</p>
+        <p className="text-center">Belum punya akun? <Link href="/daftar" className="font-semibold text-primary underline">Daftar</Link></p>
+        <p className="text-center text-sm text-muted-foreground">Lupa password? Hubungi admin keluarga.</p>
       </div>
     </main>
   );

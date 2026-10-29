@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { createMember, resetPassword, setActive } from "../actions";
 
-export type Member = { id: string; name: string; email: string; role: string | null; banned: boolean; createdAt: string };
+export type Member = { id: string; name: string; email: string; role: string | null; banned: boolean; pending: boolean; createdAt: string };
 
 const title = "font-display text-2xl font-semibold";
 
@@ -59,7 +59,7 @@ export function MemberTable({ members, adminId }: { members: Member[]; adminId: 
               </TableCell>
               <TableCell className="hidden text-muted-foreground md:table-cell">{m.email}</TableCell>
               <TableCell>{m.role === "admin" ? <Badge>Admin</Badge> : <Badge variant="secondary">Anggota</Badge>}</TableCell>
-              <TableCell>{m.banned ? <Badge variant="destructive">Nonaktif</Badge> : <Badge variant="outline">Aktif</Badge>}</TableCell>
+              <TableCell>{m.pending ? <Badge className="bg-kunyit text-amber-950">Menunggu</Badge> : m.banned ? <Badge variant="destructive">Nonaktif</Badge> : <Badge variant="outline">Aktif</Badge>}</TableCell>
               <TableCell className="hidden text-muted-foreground sm:table-cell">{m.createdAt}</TableCell>
             </TableRow>
           ))}
@@ -78,7 +78,7 @@ export function MemberTable({ members, adminId }: { members: Member[]; adminId: 
                 <dt className="text-muted-foreground">Peran</dt>
                 <dd>{selected.role === "admin" ? "Admin" : "Anggota"}</dd>
                 <dt className="text-muted-foreground">Status</dt>
-                <dd>{selected.banned ? "Nonaktif" : "Aktif"}</dd>
+                <dd>{selected.pending ? "Menunggu persetujuan" : selected.banned ? "Nonaktif" : "Aktif"}</dd>
                 <dt className="text-muted-foreground">Dibuat</dt>
                 <dd>{selected.createdAt}</dd>
               </dl>
@@ -92,7 +92,7 @@ export function MemberTable({ members, adminId }: { members: Member[]; adminId: 
               {selected.id !== adminId && (
                 <form action={setActive.bind(null, selected.id, selected.banned)}>
                   <Button type="submit" variant={selected.banned ? "default" : "destructive"} className="w-full">
-                    {selected.banned ? <><UserCheck aria-hidden /> Aktifkan akun</> : <><UserX aria-hidden /> Nonaktifkan akun</>}
+                    {selected.pending ? <><UserCheck aria-hidden /> Setujui akun</> : selected.banned ? <><UserCheck aria-hidden /> Aktifkan akun</> : <><UserX aria-hidden /> Nonaktifkan akun</>}
                   </Button>
                 </form>
               )}

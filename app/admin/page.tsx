@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChefHat, ClipboardCheck, Download, Trash2, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
+import { PENDING } from "@/lib/pending";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -11,7 +12,7 @@ export default async function AdminPage() {
   const admin = await requireAdmin();
   const now = new Date().getTime();
   const since = new Date(now - 7 * 864e5);
-  const [members, recipes, needsCheck, trash, logs, users, byCategory, byOwner, categories, people, week] = await Promise.all([
+  const [members, recipes, needsCheck, trash, logs, users, byCategory, byOwner, categories, people, week, waiting] = await Promise.all([
     prisma.user.count({ where: { banned: false } }),
     prisma.recipe.count({ where: { deletedAt: null } }),
     prisma.recipe.count({ where: { deletedAt: null, status: "perlu_dicek" } }),
@@ -23,6 +24,7 @@ export default async function AdminPage() {
     prisma.category.findMany({ select: { id: true, name: true } }),
     prisma.person.findMany({ select: { id: true, name: true } }),
     prisma.auditLog.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+    prisma.user.count({ where: { banned: true, banReason: PENDING } }),
   ]);
   const rows = (g: { _count: number }[], key: (x: never) => string | null, names: { id: string; name: string }[], none: string) => {
     const label = new Map(names.map((n) => [n.id, n.name]));
@@ -49,6 +51,13 @@ export default async function AdminPage() {
         <h1 className="font-display text-3xl font-semibold">Ringkasan</h1>
         <p className="text-muted-foreground">Halo, {admin.name}.</p>
       </header>
+
+      {waiting > 0 && (
+        <Link href="/admin/anggota?status=menunggu" className="flex min-h-12 items-center justify-between gap-3 rounded-lg bg-kunyit p-4 font-semibold text-amber-950 hover:brightness-95">
+          <span>{waiting} pendaftar menunggu persetujuan</span>
+          <span className="underline">Tinjau</span>
+        </Link>
+      )}
 
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map(([label, n, href, Icon, tone]) => {
