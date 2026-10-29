@@ -1,6 +1,6 @@
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
-import { currentUser, unauthorized } from "@/lib/recipes";
+import { currentUser, forbidden, unauthorized } from "@/lib/recipes";
 
 export async function GET() {
   if (!(await currentUser())) return unauthorized();
@@ -10,6 +10,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await currentUser();
   if (!user) return unauthorized();
+  if (user.role !== "admin") return forbidden();
   const { name, sortOrder } = (await req.json().catch(() => ({}))) as { name?: unknown; sortOrder?: unknown };
   if (typeof name !== "string" || !name.trim()) return Response.json({ error: "Nama wajib diisi" }, { status: 400 });
   const data = { name: name.trim(), sortOrder: typeof sortOrder === "number" ? sortOrder : 0 };

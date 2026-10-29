@@ -8,6 +8,7 @@ export async function currentUser() {
 }
 
 export const unauthorized = () => Response.json({ error: "Belum masuk" }, { status: 401 });
+export const forbidden = () => Response.json({ error: "Hanya admin" }, { status: 403 });
 export const notFound = () => Response.json({ error: "Resep tidak ditemukan" }, { status: 404 });
 
 const TEXT = ["title", "ingredientsText", "stepsText", "originStory", "memoryNote", "servings", "cookTime"] as const;

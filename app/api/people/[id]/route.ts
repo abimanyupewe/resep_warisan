@@ -1,10 +1,11 @@
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
-import { currentUser, unauthorized } from "@/lib/recipes";
+import { currentUser, forbidden, unauthorized } from "@/lib/recipes";
 
 export async function PATCH(req: Request, ctx: RouteContext<"/api/people/[id]">) {
   const user = await currentUser();
   if (!user) return unauthorized();
+  if (user.role !== "admin") return forbidden();
   const { id } = await ctx.params;
   const { name, relationNote, sortOrder } = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   if (name !== undefined && (typeof name !== "string" || !name.trim()))
@@ -24,6 +25,7 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/people/[id]">)
 export async function DELETE(_req: Request, ctx: RouteContext<"/api/people/[id]">) {
   const user = await currentUser();
   if (!user) return unauthorized();
+  if (user.role !== "admin") return forbidden();
   const { id } = await ctx.params;
   if (await prisma.recipe.count({ where: { ownerPersonId: id } }))
     return Response.json({ error: "Pemilik masih punya resep" }, { status: 409 });
