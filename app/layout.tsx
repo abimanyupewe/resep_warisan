@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,11 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Dapur Uti",
   description: "Resep warisan keluarga",
+  icons: { apple: "/pwa-icon?size=192" },
+  appleWebApp: { capable: true, title: "Dapur Uti", statusBarStyle: "default" },
 };
+
+export const viewport: Viewport = { themeColor: "#a0472a" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
