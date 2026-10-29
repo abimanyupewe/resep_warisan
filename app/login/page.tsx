@@ -1,3 +1,9 @@
+import { LogIn } from "lucide-react";
+import { Flash } from "@/app/admin/flash";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { login } from "./actions";
 
 export const metadata = { title: "Masuk · Dapur Uti" };
@@ -7,20 +13,30 @@ export const instant = false;
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   return (
-    <main className="mx-auto w-full max-w-md p-6">
-      <h1 className="mb-6 text-3xl font-bold">Dapur Uti</h1>
-      {error && <p role="alert" className="mb-4 bg-red-100 p-3 text-red-900">{error}</p>}
-      <form action={login} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1">
-          Email
-          <input name="email" type="email" required autoComplete="username" className="min-h-12 border-2 border-neutral-400 px-3 text-black" />
-        </label>
-        <label className="flex flex-col gap-1">
-          Password
-          <input name="password" type="password" required autoComplete="current-password" className="min-h-12 border-2 border-neutral-400 px-3 text-black" />
-        </label>
-        <button className="min-h-12 bg-amber-800 px-4 font-semibold text-white">Masuk</button>
-      </form>
+    <main className="flex min-h-screen items-center justify-center bg-muted p-4">
+      <div className="flex w-full max-w-md flex-col gap-6">
+        <header className="text-center">
+          <h1 className="font-display text-4xl font-semibold">Dapur Uti</h1>
+          <p className="text-muted-foreground">Resep warisan keluarga</p>
+        </header>
+        <Card>
+          <CardContent className="flex flex-col gap-4">
+            <Flash error={error} />
+            <form action={login} className="flex flex-col gap-4">
+              <label className="flex flex-col gap-1 font-semibold">
+                Email
+                <Input name="email" type="email" required autoComplete="username" />
+              </label>
+              <label className="flex flex-col gap-1 font-semibold">
+                Password
+                <PasswordInput name="password" required autoComplete="current-password" />
+              </label>
+              <Button type="submit" size="lg"><LogIn aria-hidden /> Masuk</Button>
+            </form>
+          </CardContent>
+        </Card>
+        <p className="text-center text-sm text-muted-foreground">Belum punya akun atau lupa password? Hubungi admin keluarga.</p>
+      </div>
     </main>
   );
 }
