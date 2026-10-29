@@ -5,7 +5,12 @@ import { admin } from "better-auth/plugins";
 import { audit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
+// Vercel mengisi VERCEL_URL (alamat deployment ini) dan VERCEL_PROJECT_PRODUCTION_URL otomatis. Keduanya dipercaya
+// agar login tetap jalan di alamat preview dan alamat vercel.app, selain BETTER_AUTH_URL.
+const vercelOrigins = [process.env.VERCEL_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL].filter(Boolean).map((host) => `https://${host}`);
+
 export const auth = betterAuth({
+  trustedOrigins: vercelOrigins,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,

@@ -63,7 +63,7 @@ export async function finishCook(recipeId: string, back: "resep" | "beranda" | "
   const user = await requireUser();
   await prisma.cookLog.updateMany({ where: { userId: user.id, recipeId, finishedAt: null }, data: { finishedAt: new Date() } });
   const ok = encodeURIComponent("Ditandai sudah selesai. Selamat makan!");
-  redirect(back === "beranda" ? `/?ok=${ok}` : back === "riwayat" ? `/riwayat?ok=${ok}` : `/resep/${recipeId}?ok=${ok}`);
+  redirect(back === "beranda" ? `/beranda?ok=${ok}` : back === "riwayat" ? `/riwayat?ok=${ok}` : `/resep/${recipeId}?ok=${ok}`);
 }
 
 // Salah pilih: pilihan yang belum selesai dibatalkan dan tidak masuk riwayat.

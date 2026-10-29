@@ -6,7 +6,7 @@ import { BookOpen, History, House, Plus, UserRound } from "lucide-react";
 
 // Menu "Buku" (PDF) menyusul saat fitur ekspor dibuat.
 const ITEMS = [
-  ["/", "Beranda", House],
+  ["/beranda", "Beranda", House],
   ["/resep", "Resep", BookOpen],
   ["/riwayat", "Riwayat", History],
   ["/resep/baru", "Tambah", Plus],
@@ -27,7 +27,7 @@ export function MemberNav({ variant }: { variant: "tabs" | "top" }) {
     >
       {ITEMS.map(([href, label, Icon]) => {
         // Daftar, detail, dan ubah resep menyalakan Resep; hanya /resep/baru yang menyalakan Tambah.
-        const active = href === "/" ? path === "/" : href === "/resep" ? path.startsWith("/resep") && !path.startsWith("/resep/baru") : path.startsWith(href);
+        const active = href === "/beranda" ? path === "/beranda" : href === "/resep" ? path.startsWith("/resep") && !path.startsWith("/resep/baru") : path.startsWith(href);
         const cls = tabs
           ? `flex min-h-16 flex-col items-center justify-center gap-1 text-[15px] font-semibold leading-tight ${active ? "text-primary" : "text-muted-foreground"}`
           : `flex min-h-12 items-center gap-2 rounded-md px-4 font-semibold ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`;

@@ -19,9 +19,9 @@ type Card = {
   category: { name: string } | null; owner: { name: string } | null; photos: { cloudinaryPublicId: string }[];
 };
 
-export function RecipeCard({ r, tone }: { r: Card; tone: Map<string, string> }) {
+export function RecipeCard({ r, tone, href }: { r: Card; tone: Map<string, string>; href?: string }) {
   return (
-    <Link href={`/resep/${r.id}`} className="flex h-full flex-col overflow-hidden rounded-lg bg-background ring-1 ring-border hover:ring-primary">
+    <Link href={href ?? `/resep/${r.id}`} className="flex h-full flex-col overflow-hidden rounded-lg bg-background ring-1 ring-border hover:ring-primary">
       {r.photos[0] && <CloudImg src={thumb(r.photos[0].cloudinaryPublicId)} alt={`Foto ${r.title}`} width={600} height={400} className="aspect-[3/2] w-full object-cover" />}
       <span className={`px-4 py-2 text-sm font-semibold ${(r.categoryId && tone.get(r.categoryId)) || "bg-secondary"}`}>{r.category?.name ?? "Tanpa kategori"}</span>
       <span className="flex flex-1 flex-col gap-2 p-4">

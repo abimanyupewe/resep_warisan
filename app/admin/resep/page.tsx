@@ -1,5 +1,8 @@
+import Link from "next/link";
+import { Upload } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { clampPage, contains, one, parseList, sort } from "../list-params";
 import { ListControls } from "../list-controls";
@@ -61,7 +64,10 @@ export default async function ResepPage({ searchParams }: { searchParams: Promis
 
   return (
     <main className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl font-semibold">Resep</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-semibold">Resep</h1>
+        <Link href="/admin/resep/impor" className={buttonVariants({ variant: "outline" })}><Upload aria-hidden /> Impor resep</Link>
+      </div>
       <ListControls
         values={params}
         sorts={SORTS}

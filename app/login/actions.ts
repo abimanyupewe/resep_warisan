@@ -27,7 +27,7 @@ export async function login(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent(msg)}`);
   }
   // Admin masuk ke panel; anggota biasa ke beranda resep.
-  redirect(admin ? "/admin" : "/");
+  redirect(admin ? "/admin" : "/beranda");
 }
 
 export async function logout() {

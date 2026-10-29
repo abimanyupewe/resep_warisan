@@ -42,5 +42,5 @@ export async function daftar(formData: FormData) {
   } catch {
     redirect("/login?ok=" + encodeURIComponent("Akun berhasil dibuat. Silakan masuk."));
   }
-  redirect("/");
+  redirect("/beranda");
 }

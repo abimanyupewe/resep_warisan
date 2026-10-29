@@ -4,9 +4,9 @@ import { Flash } from "@/app/admin/flash";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/member";
 import { prisma } from "@/lib/prisma";
-import { InstallBanner } from "./install-banner";
-import { finishCook } from "./resep/actions";
-import { cardInclude, RecipeCard, toneMap } from "./recipe-card";
+import { InstallBanner } from "../install-banner";
+import { finishCook } from "../resep/actions";
+import { cardInclude, RecipeCard, toneMap } from "../recipe-card";
 
 const day = (d: Date) => d.toLocaleDateString("id-ID", { dateStyle: "medium", timeZone: "Asia/Jakarta" });
 const h2 = "font-display text-2xl font-semibold";

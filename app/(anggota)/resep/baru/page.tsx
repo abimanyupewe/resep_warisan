@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { requireUser } from "@/lib/member";
 import { prisma } from "@/lib/prisma";
 import { RecipeForm } from "../recipe-form";
 
 const order = [{ sortOrder: "asc" }, { name: "asc" }] as const;
 
 export default async function ResepBaru() {
+  await requireUser();
   const [categories, people] = await Promise.all([
     prisma.category.findMany({ orderBy: [...order], select: { id: true, name: true } }),
     prisma.person.findMany({ orderBy: [...order], select: { id: true, name: true } }),

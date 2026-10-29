@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { requireUser } from "@/lib/member";
 import { prisma } from "@/lib/prisma";
 import { RecipeForm } from "../../recipe-form";
 
 const order = [{ sortOrder: "asc" }, { name: "asc" }] as const;
 
 export default async function UbahResep(props: PageProps<"/resep/[id]/ubah">) {
+  await requireUser();
   const { id } = await props.params;
   const [r, categories, people] = await Promise.all([
     prisma.recipe.findFirst({ where: { id, deletedAt: null } }),

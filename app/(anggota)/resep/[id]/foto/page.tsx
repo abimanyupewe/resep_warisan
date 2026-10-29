@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { thumb } from "@/lib/cloudinary";
+import { requireUser } from "@/lib/member";
 import { prisma } from "@/lib/prisma";
 import { PhotoManager } from "./photo-manager";
 
 export default async function FotoResep(props: PageProps<"/resep/[id]/foto">) {
+  await requireUser();
   const { id } = await props.params;
   const r = await prisma.recipe.findFirst({
     where: { id, deletedAt: null },
