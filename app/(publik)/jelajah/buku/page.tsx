@@ -3,6 +3,8 @@ import { connection } from "next/server";
 import { bookOptions } from "@/lib/book";
 
 export const metadata = { title: "Buku resep · Dapur Uti" };
+// Membaca database saat request, jadi tidak punya cangkang statis (sama seperti halaman publik lain).
+export const instant = false;
 
 // Versi pengunjung dari halaman Buku: isinya sama, hanya resep yang sudah tampil di halaman umum.
 export default async function BukuPublik() {
