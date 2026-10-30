@@ -1,4 +1,4 @@
--- CreateTable
+git merge staging-- CreateTable
 CREATE TABLE "CookLog" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
