@@ -11,6 +11,7 @@ Platform resep warisan keluarga: tempat mencatat, mencari, dan membaca resep tur
 ![Neon Postgres](https://img.shields.io/badge/Neon-Postgres-4169E1?logo=postgresql&logoColor=white)
 ![Better Auth](https://img.shields.io/badge/Better%20Auth-1.7-111111)
 ![Cloudinary](https://img.shields.io/badge/Cloudinary-foto-3448C5?logo=cloudinary&logoColor=white)
+![OCR Gemini](https://img.shields.io/badge/OCR-Gemini%203.5%20Flash--Lite-8E75B2?logo=googlegemini&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-Hobby-000000?logo=vercel&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-dapat%20dipasang-5A0FC8?logo=pwa&logoColor=white)
@@ -113,7 +114,7 @@ Admin:
 | ORM | Prisma 7 dengan adapter Neon | ![Prisma](https://img.shields.io/badge/Prisma-7.10-2D3748?logo=prisma&logoColor=white) |
 | Autentikasi | Better Auth (email dan password, plugin admin) | ![Better Auth](https://img.shields.io/badge/Better%20Auth-1.7-111111) |
 | Foto | Cloudinary (unggah bertanda tangan dari server) | ![Cloudinary](https://img.shields.io/badge/Cloudinary-foto-3448C5?logo=cloudinary&logoColor=white) |
-| OCR | Gemini API (model vision, dipanggil dari server) | ![Gemini](https://img.shields.io/badge/Gemini-API-8E75B2?logo=googlegemini&logoColor=white) |
+| OCR | Gemini API (model vision, dipanggil dari server) | ![OCR Gemini](https://img.shields.io/badge/OCR-Gemini%203.5%20Flash--Lite-8E75B2?logo=googlegemini&logoColor=white) |
 | PDF | @react-pdf/renderer, dijalankan di browser | ![react-pdf](https://img.shields.io/badge/react--pdf-4.9-E8452C) |
 | Huruf buku | Lora (@fontsource/lora) | ![Lora](https://img.shields.io/badge/font-Lora-111111) |
 | Grafik admin | Recharts 3 | ![Recharts](https://img.shields.io/badge/Recharts-3.8-22B5BF) |
