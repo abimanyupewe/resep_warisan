@@ -1,11 +1,13 @@
 "use client";
 
-import { useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
 import { Camera, ScanText, Save } from "lucide-react";
 import { Flash } from "@/app/admin/flash";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { compress } from "@/lib/upload-photo";
 import { saveRecipe } from "./actions";
 import { NEW_REF } from "./new-ref";
 
@@ -37,17 +39,64 @@ function RefField({ title, noun, name, newName, options, initial, placeholder }:
   );
 }
 
-// OCR jalan di browser (Tesseract.js); hasilnya hanya draf yang ditambahkan ke kolom Bahan.
-async function readHandwriting(file: File, form: HTMLFormElement) {
-  const { recognize } = await import("tesseract.js");
-  const { data } = await recognize(file, "ind");
-  const box = form.elements.namedItem("ingredientsText") as HTMLTextAreaElement;
-  box.value = [box.value, data.text.trim()].filter(Boolean).join("\n");
+// OCR lewat /api/ocr (Gemini); hasilnya hanya draf yang ditambahkan ke kolom Bahan dan Langkah.
+async function readHandwriting(file: File, form: HTMLFormElement, setCategory: (id: string) => void) {
+  const body = new FormData();
+  body.set("file", await compress(file, 2000));
+  const res = await fetch("/api/ocr", { method: "POST", body });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error);
+  const title = form.elements.namedItem("title") as HTMLInputElement;
+  if (!title.value.trim() && data.title) title.value = data.title;
+  // Hanya mengisi kategori yang masih "Belum dipilih"; pilihan pengguna tidak ditimpa.
+  if (data.categoryId && !(form.elements.namedItem("categoryId") as HTMLSelectElement).value) setCategory(data.categoryId);
+  for (const [name, lines] of [["ingredientsText", data.ingredients], ["stepsText", data.steps]] as const) {
+    const box = form.elements.namedItem(name) as HTMLTextAreaElement;
+    box.value = [box.value, ...lines].filter(Boolean).join("\n");
+  }
 }
 
-export function RecipeForm({ id, initial, categories, people }: { id: string | null; initial: RecipeValues; categories: Opt[]; people: Opt[] }) {
+type Props = { id: string | null; initial: RecipeValues; categories: Opt[]; people: Opt[] };
+
+// cacheComponents menyembunyikan halaman (bukan membongkarnya) saat pengguna berpindah, sehingga isian ikut tersimpan.
+// Efek dibersihkan saat halaman disembunyikan; begitu tampil lagi, key baru memuat ulang formulir dari nilai awal.
+export function RecipeForm(props: Props) {
+  const [key, setKey] = useState(0);
+  const left = useRef(false);
+  useEffect(() => {
+    if (left.current) {
+      left.current = false;
+      setKey((k) => k + 1);
+    }
+    return () => {
+      left.current = true;
+    };
+  }, []);
+  return <Form key={key} {...props} />;
+}
+
+// Tidak bisa ditutup: prosesnya berjalan di server dan hasilnya langsung dipakai formulir.
+function Waiting({ open, title, text }: { open: boolean; title: string; text: string }) {
+  return (
+    <Dialog open={open} onOpenChange={() => {}}>
+      <DialogContent showCloseButton={false} className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="font-display text-2xl font-semibold">{title}</DialogTitle>
+          <DialogDescription className="text-base">{text}</DialogDescription>
+        </DialogHeader>
+        <div role="progressbar" aria-label={title} className="h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div className="bar-slide h-full w-2/5 rounded-full bg-primary" />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Form({ id, initial, categories, people }: Props) {
   const [error, setError] = useState("");
   const [ocr, setOcr] = useState("");
+  // key berganti agar RefField dimuat ulang dengan kategori hasil OCR sebagai nilai awalnya.
+  const [cat, setCat] = useState({ id: initial.categoryId, key: 0 });
   const camera = useRef<HTMLInputElement>(null);
   const gallery = useRef<HTMLInputElement>(null);
 
@@ -55,12 +104,12 @@ export function RecipeForm({ id, initial, categories, people }: { id: string | n
     const input = e.currentTarget, file = input.files?.[0], form = input.form;
     if (!file || !form) return;
     setError("");
-    setOcr("Membaca tulisan...");
+    setOcr("Menunggu analisis...");
     try {
-      await readHandwriting(file, form);
-      setError("Hasil bacaan masuk ke kolom Bahan sebagai draf. Periksa dan pindahkan baris langkah ke kolom Langkah.");
-    } catch {
-      setError("Tulisan belum bisa dibaca. Periksa internet atau coba foto yang lebih jelas.");
+      await readHandwriting(file, form, (id) => setCat({ id, key: cat.key + 1 }));
+      setError("Hasil bacaan masuk ke kolom Bahan dan Langkah sebagai draf (judul dan kategori diisi bila masih kosong). Periksa dulu sebelum disimpan.");
+    } catch (err) {
+      setError(err instanceof Error && err.message ? err.message : "Tulisan belum bisa dibaca. Periksa internet atau coba foto yang lebih jelas.");
     } finally {
       setOcr("");
       input.value = "";
@@ -88,7 +137,7 @@ export function RecipeForm({ id, initial, categories, people }: { id: string | n
       </label>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <RefField title="Kategori" noun="kategori" name="categoryId" newName="newCategory" options={categories} initial={initial.categoryId} placeholder="mis. Makanan Utama" />
+        <RefField key={cat.key} title="Kategori" noun="kategori" name="categoryId" newName="newCategory" options={categories} initial={cat.id} placeholder="mis. Makanan Utama" />
         <RefField title="Pemilik resep" noun="pemilik" name="ownerPersonId" newName="newOwner" options={people} initial={initial.ownerPersonId} placeholder="mis. Budhe Sri" />
       </div>
 
@@ -104,7 +153,7 @@ export function RecipeForm({ id, initial, categories, people }: { id: string | n
         {/* capture="environment" membuka kamera belakang langsung; tanpa itu browser menawarkan galeri/berkas. */}
         <input ref={camera} type="file" accept="image/*" capture="environment" hidden onChange={onOcr} />
         <input ref={gallery} type="file" accept="image/*" hidden onChange={onOcr} />
-        <span className={hint}>{ocr || "Baca tulisan tangan dari foto. Hasilnya hanya draf, wajib diperiksa sebelum disimpan."}</span>
+        <span className={hint}>Baca tulisan tangan dari foto. Hasilnya hanya draf, wajib diperiksa sebelum disimpan.</span>
       </div>
 
       <label className={label}>
@@ -138,6 +187,9 @@ export function RecipeForm({ id, initial, categories, people }: { id: string | n
         <span>Catatan <span className={hint}>(boleh dikosongkan)</span></span>
         <Textarea name="memoryNote" defaultValue={initial.memoryNote} rows={3} />
       </label>
+
+      <Waiting open={!!ocr} title="Menunggu analisis" text="Foto sedang dibaca. Mohon tunggu beberapa detik, jangan tutup halaman ini." />
+      <Waiting open={pending} title="Menyimpan resep" text="Mohon tunggu sebentar, jangan tutup halaman ini." />
 
       <Flash error={error} />
       <Button type="submit" size="lg" disabled={pending}><Save aria-hidden /> {pending ? "Menyimpan..." : "Simpan resep"}</Button>

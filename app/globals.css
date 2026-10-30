@@ -74,3 +74,13 @@ body {
   color: var(--foreground);
   font-family: var(--font-nunito), Arial, Helvetica, sans-serif;
 }
+
+/* Bilah kemajuan tanpa ujung untuk menunggu hasil analisis foto. */
+@keyframes bar-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+.bar-slide { animation: bar-slide 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .bar-slide { animation: none; width: 100%; }
+}

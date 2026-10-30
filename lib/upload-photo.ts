@@ -3,7 +3,7 @@ export type PhotoKind = "masakan" | "tulisan_asli" | "sampul" | "persembahan" | 
 export type UploadedPhoto = { id: string; cloudinaryPublicId: string; width: number; height: number };
 
 // Kompres di browser sebelum diunggah (KF06): hemat kuota HP dan kuota Cloudinary gratis.
-async function compress(file: File, maxSide: number) {
+export async function compress(file: File, maxSide: number) {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
   const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
   const width = Math.round(bmp.width * scale);

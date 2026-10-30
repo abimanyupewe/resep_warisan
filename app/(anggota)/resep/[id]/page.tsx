@@ -29,7 +29,10 @@ export default async function DetailResep(props: PageProps<"/resep/[id]">) {
 
       <Flash ok={typeof ok === "string" ? ok : undefined} />
 
-      {/* Satu tombol utama per layar: memilih resep, lalu menandai selesai. */}
+      <RecipeBody r={r} fontSize={FONT_SIZE[user.fontSize]} />
+      <p className="text-sm text-muted-foreground">Terakhir diubah oleh {r.updatedBy.name}, {r.updatedAt.toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" })}.</p>
+
+      {/* Di bawah isi resep: dibaca dulu, lalu dipilih dan ditandai selesai. */}
       {active ? (
         <section className="flex flex-col gap-3 rounded-lg bg-kunyit/50 p-4">
           <p className="font-semibold">Sedang dimasak. Sudah selesai memasak?</p>
@@ -44,9 +47,6 @@ export default async function DetailResep(props: PageProps<"/resep/[id]">) {
           {lastDone?.finishedAt && <p className="text-sm text-muted-foreground">Terakhir selesai dimasak {lastDone.finishedAt.toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" })}.</p>}
         </section>
       )}
-
-      <RecipeBody r={r} fontSize={FONT_SIZE[user.fontSize]} />
-      <p className="text-sm text-muted-foreground">Terakhir diubah oleh {r.updatedBy.name}, {r.updatedAt.toLocaleDateString("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" })}.</p>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row">

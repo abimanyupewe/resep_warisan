@@ -40,12 +40,17 @@ export function RecipeBody({ r, fontSize }: { r: BodyRecipe; fontSize?: string }
 
       <section>
         <h2 className={h2}>Bahan</h2>
-        {ingredients.length ? <ul className="mt-2 flex list-disc flex-col gap-1 pl-6">{ingredients.map((x, i) => <li key={i}>{x}</li>)}</ul> : <p className="mt-2 text-muted-foreground">Bahan belum ditulis.</p>}
+        {ingredients.length ? <ul className="mt-3 flex list-disc flex-col gap-3 pl-6 leading-relaxed">
+            {ingredients.map((x, i) => x.endsWith(":")
+              // Judul bagian (mis. "Adonan:") berdiri sendiri tanpa titik daftar, dengan jarak lebih lega di atasnya.
+              ? <li key={i} className="-ml-6 mt-3 list-none font-semibold first:mt-0">{x.slice(0, -1)}</li>
+              : <li key={i}>{x}</li>)}
+          </ul> : <p className="mt-2 text-muted-foreground">Bahan belum ditulis.</p>}
       </section>
 
       <section>
         <h2 className={h2}>Langkah</h2>
-        {steps.length ? <ol className="mt-2 flex list-decimal flex-col gap-3 pl-6">{steps.map((x, i) => <li key={i}>{x}</li>)}</ol> : <p className="mt-2 text-muted-foreground">Langkah belum ditulis.</p>}
+        {steps.length ? <ol className="mt-3 flex list-decimal flex-col gap-4 pl-6 leading-relaxed">{steps.map((x, i) => <li key={i}>{x}</li>)}</ol> : <p className="mt-2 text-muted-foreground">Langkah belum ditulis.</p>}
       </section>
 
       {r.originStory && <section><h2 className={h2}>Cerita di balik resep</h2><p className="mt-2 whitespace-pre-line">{r.originStory}</p></section>}
