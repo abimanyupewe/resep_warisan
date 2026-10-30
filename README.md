@@ -2,7 +2,7 @@
 
 Platform resep warisan keluarga: tempat mencatat, mencari, dan membaca resep turun-temurun, lalu mengubahnya menjadi buku resep berukuran A5 dalam bentuk PDF yang siap dicetak.
 
-![Status](https://img.shields.io/badge/status-dalam%20pengembangan-orange)
+![Status](https://img.shields.io/badge/status-production-brightgreen)
 ![Next.js](https://img.shields.io/badge/Next.js-16.4-000000?logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
@@ -428,7 +428,7 @@ Proyek ini memakai Next.js 16 dan React 19 yang memiliki perubahan dibandingkan 
 
 ## Status dan Batasan
 
-Proyek masih dalam pengembangan. Hal-hal yang belum ada atau sengaja dibatasi:
+Proyek sudah berjalan di produksi. Hal-hal yang belum ada atau sengaja dibatasi:
 
 - Pencadangan otomatis ke Google Drive dan Vercel Cron belum diimplementasikan (hanya variabel lingkungannya yang disiapkan).
 - Belum ada pengujian otomatis. Verifikasi saat ini lewat `npm run lint`, `npm run build`, dan pemeriksaan manual.
