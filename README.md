@@ -79,6 +79,7 @@ Anggota keluarga:
 - Menulis dan mengubah resep: judul, kategori, pemilik, porsi, waktu masak, tingkat kesulitan, bahan dan langkah (satu per baris), cerita resep, dan catatan.
 - Membuat kategori atau pemilik resep baru langsung dari form tambah resep.
 - Mengunggah foto masakan dan foto tulisan asli, dikompres di browser sebelum dikirim ke Cloudinary.
+- Membaca resep dari foto tulisan tangan (OCR) di form tambah dan ubah resep, lewat kamera atau galeri. Hasilnya masuk ke kolom Bahan dan Langkah sebagai draf, dan judul serta kategori diisi bila masih kosong. Bahan yang terbagi dalam bagian (mis. "Adonan:") ditampilkan sebagai judul bagian. Pembacaan dibatasi per hari untuk seluruh aplikasi.
 - Pencarian, filter, dan paginasi daftar resep, dengan filter yang dibuka dalam modal.
 - Memilih resep yang sedang dimasak dan melihat riwayatnya.
 - Mengatur ukuran huruf per akun dan memasang aplikasi ke layar utama HP.
@@ -112,6 +113,7 @@ Admin:
 | ORM | Prisma 7 dengan adapter Neon | ![Prisma](https://img.shields.io/badge/Prisma-7.10-2D3748?logo=prisma&logoColor=white) |
 | Autentikasi | Better Auth (email dan password, plugin admin) | ![Better Auth](https://img.shields.io/badge/Better%20Auth-1.7-111111) |
 | Foto | Cloudinary (unggah bertanda tangan dari server) | ![Cloudinary](https://img.shields.io/badge/Cloudinary-foto-3448C5?logo=cloudinary&logoColor=white) |
+| OCR | Gemini API (model vision, dipanggil dari server) | ![Gemini](https://img.shields.io/badge/Gemini-API-8E75B2?logo=googlegemini&logoColor=white) |
 | PDF | @react-pdf/renderer, dijalankan di browser | ![react-pdf](https://img.shields.io/badge/react--pdf-4.9-E8452C) |
 | Huruf buku | Lora (@fontsource/lora) | ![Lora](https://img.shields.io/badge/font-Lora-111111) |
 | Grafik admin | Recharts 3 | ![Recharts](https://img.shields.io/badge/Recharts-3.8-22B5BF) |
@@ -149,6 +151,7 @@ resep_warisan/
 │   │   ├── auth/                 Endpoint Better Auth
 │   │   ├── book/                 Data isi buku untuk pembuatan PDF
 │   │   ├── categories/           Kategori
+│   │   ├── ocr/                  Pembacaan foto tulisan tangan lewat Gemini
 │   │   ├── people/               Pemilik resep
 │   │   ├── photos/               Foto (tanda tangan unggah dan pendaftaran)
 │   │   └── recipes/              Resep, versi, dan pemulihan
@@ -214,7 +217,7 @@ Skema lengkap ada di `prisma/schema.prisma`. Entitas utamanya:
 | BookProfile | Pengaturan template buku (satu baris). |
 | Faq | Pertanyaan umum di landing page. |
 | CookLog | Riwayat resep yang dipilih untuk dimasak. |
-| AuditLog | Catatan tindakan penting. |
+| AuditLog | Catatan tindakan penting. Setiap pembacaan OCR (`ocr.read`) juga dicatat di sini dan dipakai untuk menghitung batas harian. |
 
 ## Cara Install
 
@@ -229,6 +232,7 @@ Bagian ini menjelaskan pemasangan dari awal sampai aplikasi berjalan di komputer
 | Git | Untuk mengambil kode. |
 | Akun Neon | Database Postgres. Daftar di neon.tech (paket Free). |
 | Akun Cloudinary | Penyimpanan foto. Daftar di cloudinary.com (paket Free). |
+| API key Gemini | Opsional, hanya untuk fitur baca tulisan tangan (OCR). Buat di aistudio.google.com (Get API key). |
 | Akun Vercel | Hanya untuk deploy. Tidak diperlukan untuk menjalankan di lokal. |
 
 ### 2. Ambil kode
@@ -274,6 +278,8 @@ Isi minimal untuk menjalankan di lokal:
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Sama dengan `CLOUDINARY_CLOUD_NAME` |
 | `ADMIN_EMAIL` | Email untuk akun admin pertama |
 | `ADMIN_PASSWORD` | Password untuk akun admin pertama (gunakan yang kuat) |
+| `GEMINI_API_KEY` | API key dari Google AI Studio. Boleh dikosongkan; tanpanya tombol baca tulisan tangan akan gagal. |
+| `GEMINI_MODEL` | Nama model vision, mis. `gemini-3.5-flash-lite` |
 
 Variabel Google Drive dan `CRON_SECRET` boleh dikosongkan; fiturnya belum aktif (lihat [Status dan Batasan](#status-dan-batasan)). Berkas `.env` sudah diabaikan oleh Git, jadi tidak akan ikut ter-commit. Jangan pernah membagikan isinya.
 
@@ -345,6 +351,9 @@ Semua variabel didefinisikan di `.env.example`. Di Vercel, isi key yang sama pad
 | `ADMIN_PASSWORD` | Untuk seed | Password admin pertama, dipakai `scripts/seed.ts`. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GOOGLE_DRIVE_FOLDER_ID` | Belum dipakai | Disiapkan untuk pencadangan otomatis ke Google Drive. Belum dipakai oleh kode. |
 | `CRON_SECRET` | Belum dipakai | Disiapkan untuk pekerjaan terjadwal Vercel Cron. Belum dipakai oleh kode. |
+| `GEMINI_API_KEY` | Untuk OCR | API key Gemini, dibuat di aistudio.google.com. Hanya dipakai di server. |
+| `GEMINI_MODEL` | Untuk OCR | Model vision yang dipakai. Bawaan di `.env.example`: `gemini-3.5-flash-lite`; ganti ke `gemini-3.6-flash` bila tulisan terlalu sulit dibaca. |
+| `OCR_DAILY_LIMIT` | Tidak | Batas pembacaan OCR per 24 jam untuk seluruh aplikasi, menjaga kuota gratis. Bawaan 50. |
 
 ## Perintah yang Tersedia
 
@@ -408,6 +417,7 @@ Pencadangan otomatis harian ke Google Drive dirancang di `dev/dokumen/11-risiko-
 | Halaman yang membaca database error `blocking-prerender` saat build | Halaman perlu `export const instant = false` dan `await connection()` (dari `next/server`) agar dibaca saat request, bukan saat build. |
 | `migrate dev` meminta reset database | Berhenti. Pada database yang berisi data gunakan `migrate deploy`. |
 | Foto gagal terunggah | Periksa nilai Cloudinary di `.env`. Pastikan `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` sama dengan `CLOUDINARY_CLOUD_NAME`, lalu restart server dev. |
+| Baca tulisan tangan gagal atau "Layanan baca tulisan sedang bermasalah" | Periksa `GEMINI_API_KEY` dan `GEMINI_MODEL`, lalu restart server dev. Pesan "Pembacaan foto hari ini sudah penuh" berarti `OCR_DAILY_LIMIT` tercapai; tunggu 24 jam atau naikkan batasnya. Foto yang lebih dari 4 MB ditolak. |
 | PDF buku tidak mau dibuat di HP | Buku dengan banyak foto berat bagi HP murah. Pilih per kategori, atau buat di laptop. |
 
 ## Dokumentasi Pengembangan
@@ -432,7 +442,7 @@ Proyek sudah berjalan di produksi. Hal-hal yang belum ada atau sengaja dibatasi:
 
 - Pencadangan otomatis ke Google Drive dan Vercel Cron belum diimplementasikan (hanya variabel lingkungannya yang disiapkan).
 - Belum ada pengujian otomatis. Verifikasi saat ini lewat `npm run lint`, `npm run build`, dan pemeriksaan manual.
-- OCR tulisan tangan belum ada. Foto tulisan tangan hanya dilampirkan pada resep.
+- OCR tulisan tangan memakai Gemini API dan hasilnya hanya draf yang harus diperiksa. Akurasinya bergantung pada kejelasan tulisan, dan jumlah pembacaan dibatasi oleh `OCR_DAILY_LIMIT` serta kuota gratis Gemini.
 - Foto tulisan asli belum ikut dicetak di buku PDF.
 - Margin buku PDF dibuat simetris; margin sisi jilid yang berbeda untuk halaman ganjil dan genap belum diterapkan.
 - Tidak ada mode offline karena tidak memakai service worker.
