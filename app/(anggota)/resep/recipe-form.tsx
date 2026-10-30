@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Save } from "lucide-react";
+import { useRef, useState, useTransition, type ChangeEvent } from "react";
+import { Camera, ScanText, Save } from "lucide-react";
 import { Flash } from "@/app/admin/flash";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,8 +37,35 @@ function RefField({ title, noun, name, newName, options, initial, placeholder }:
   );
 }
 
+// OCR jalan di browser (Tesseract.js); hasilnya hanya draf yang ditambahkan ke kolom Bahan.
+async function readHandwriting(file: File, form: HTMLFormElement) {
+  const { recognize } = await import("tesseract.js");
+  const { data } = await recognize(file, "ind");
+  const box = form.elements.namedItem("ingredientsText") as HTMLTextAreaElement;
+  box.value = [box.value, data.text.trim()].filter(Boolean).join("\n");
+}
+
 export function RecipeForm({ id, initial, categories, people }: { id: string | null; initial: RecipeValues; categories: Opt[]; people: Opt[] }) {
   const [error, setError] = useState("");
+  const [ocr, setOcr] = useState("");
+  const camera = useRef<HTMLInputElement>(null);
+  const gallery = useRef<HTMLInputElement>(null);
+
+  async function onOcr(e: ChangeEvent<HTMLInputElement>) {
+    const input = e.currentTarget, file = input.files?.[0], form = input.form;
+    if (!file || !form) return;
+    setError("");
+    setOcr("Membaca tulisan...");
+    try {
+      await readHandwriting(file, form);
+      setError("Hasil bacaan masuk ke kolom Bahan sebagai draf. Periksa dan pindahkan baris langkah ke kolom Langkah.");
+    } catch {
+      setError("Tulisan belum bisa dibaca. Periksa internet atau coba foto yang lebih jelas.");
+    } finally {
+      setOcr("");
+      input.value = "";
+    }
+  }
   const [pending, start] = useTransition();
 
   // Tanpa prop `action` agar isian tidak dikosongkan React bila simpan gagal.
@@ -63,6 +90,21 @@ export function RecipeForm({ id, initial, categories, people }: { id: string | n
       <div className="grid gap-5 sm:grid-cols-2">
         <RefField title="Kategori" noun="kategori" name="categoryId" newName="newCategory" options={categories} initial={initial.categoryId} placeholder="mis. Makanan Utama" />
         <RefField title="Pemilik resep" noun="pemilik" name="ownerPersonId" newName="newOwner" options={people} initial={initial.ownerPersonId} placeholder="mis. Budhe Sri" />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button type="button" variant="outline" size="lg" disabled={!!ocr} onClick={() => camera.current?.click()}>
+            <Camera aria-hidden /> Foto dengan kamera
+          </Button>
+          <Button type="button" variant="outline" size="lg" disabled={!!ocr} onClick={() => gallery.current?.click()}>
+            <ScanText aria-hidden /> Pilih dari galeri
+          </Button>
+        </div>
+        {/* capture="environment" membuka kamera belakang langsung; tanpa itu browser menawarkan galeri/berkas. */}
+        <input ref={camera} type="file" accept="image/*" capture="environment" hidden onChange={onOcr} />
+        <input ref={gallery} type="file" accept="image/*" hidden onChange={onOcr} />
+        <span className={hint}>{ocr || "Baca tulisan tangan dari foto. Hasilnya hanya draf, wajib diperiksa sebelum disimpan."}</span>
       </div>
 
       <label className={label}>
