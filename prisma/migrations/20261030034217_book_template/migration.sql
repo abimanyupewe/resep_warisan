@@ -1,0 +1,10 @@
+-- AlterTable
+ALTER TABLE "BookProfile" ADD COLUMN     "accentColor" TEXT NOT NULL DEFAULT '#a0472a',
+ADD COLUMN     "familyName" TEXT,
+ADD COLUMN     "fontSize" INTEGER NOT NULL DEFAULT 12,
+ADD COLUMN     "showDedication" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showDividers" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showForeword" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showMemory" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showStory" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showToc" BOOLEAN NOT NULL DEFAULT true;

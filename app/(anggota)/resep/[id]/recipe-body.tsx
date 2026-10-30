@@ -49,7 +49,7 @@ export function RecipeBody({ r, fontSize }: { r: BodyRecipe; fontSize?: string }
       </section>
 
       {r.originStory && <section><h2 className={h2}>Cerita di balik resep</h2><p className="mt-2 whitespace-pre-line">{r.originStory}</p></section>}
-      {r.memoryNote && <section><h2 className={h2}>Catatan kenangan</h2><p className="mt-2 whitespace-pre-line">{r.memoryNote}</p></section>}
+      {r.memoryNote && <section><h2 className={h2}>Catatan</h2><p className="mt-2 whitespace-pre-line">{r.memoryNote}</p></section>}
 
       {writings.length > 0 && (
         <section>

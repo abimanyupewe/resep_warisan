@@ -11,12 +11,13 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#ffffff",
+    // Splash screen Android dibuat dari ikon + nama + warna latar ini; warna latar disamakan dengan latar logo.
+    background_color: "#fdf7ec",
     theme_color: "#a0472a",
     icons: [
-      { src: "/pwa-icon?size=192", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/pwa-icon?size=512", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/pwa-icon?size=512", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

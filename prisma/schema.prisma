@@ -205,7 +205,29 @@ model BookProfile {
   dedicationPhotoId String?  @unique
   dedicationPhoto   Photo?   @relation("BookDedication", fields: [dedicationPhotoId], references: [id])
   foreword          String?
+  familyName        String?
+  // Bagian buku yang ikut dicetak, dan tampilan umum; diatur admin di /admin/buku.
+  showDedication    Boolean  @default(true)
+  showForeword      Boolean  @default(true)
+  showToc           Boolean  @default(true)
+  showDividers      Boolean  @default(true)
+  showStory         Boolean  @default(true)
+  showMemory        Boolean  @default(true)
+  accentColor       String   @default("#a0472a")
+  fontSize          Int      @default(12)
   updatedAt         DateTime @updatedAt
+}
+
+// Pertanyaan umum di halaman depan; dikelola admin. published=false menyembunyikan tanpa menghapus.
+model Faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([sortOrder])
 }
 
 // Catatan aksi pengguna. userId sengaja tanpa relasi agar jejak tetap ada walau akun dihapus.

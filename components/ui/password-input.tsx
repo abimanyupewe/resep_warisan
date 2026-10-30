@@ -3,14 +3,15 @@
 import * as React from "react"
 import { Eye, EyeOff } from "lucide-react"
 
+import { cn } from "cn"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-function PasswordInput(props: Omit<React.ComponentProps<typeof Input>, "type">) {
+function PasswordInput({ className, ...props }: Omit<React.ComponentProps<typeof Input>, "type">) {
   const [shown, setShown] = React.useState(false)
   return (
     <div className="relative">
-      <Input {...props} type={shown ? "text" : "password"} className="pr-14" />
+      <Input {...props} type={shown ? "text" : "password"} className={cn("pr-14", className)} />
       <Button
         type="button"
         variant="ghost"

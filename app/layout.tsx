@@ -16,7 +16,6 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Dapur Uti",
   description: "Resep warisan keluarga",
-  icons: { apple: "/pwa-icon?size=192" },
   appleWebApp: { capable: true, title: "Dapur Uti", statusBarStyle: "default" },
 };
 

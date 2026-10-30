@@ -8,6 +8,7 @@ import { CloudImg } from "@/components/cloud-img";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { uploadPhoto } from "@/lib/upload-photo";
 
 export type ManagedPhoto = { id: string; kind: string; src: string };
 type Kind = "masakan" | "tulisan_asli";
@@ -18,43 +19,6 @@ const KINDS: [Kind, string, string][] = [
 ];
 // Tulisan tangan butuh resolusi lebih tinggi supaya tetap terbaca.
 const MAX_SIDE: Record<Kind, number> = { masakan: 1600, tulisan_asli: 2000 };
-
-// Kompres di browser sebelum diunggah (KF06): hemat kuota HP dan kuota Cloudinary gratis.
-async function compress(file: File, kind: Kind) {
-  const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const scale = Math.min(1, MAX_SIDE[kind] / Math.max(bmp.width, bmp.height));
-  const width = Math.round(bmp.width * scale);
-  const height = Math.round(bmp.height * scale);
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d")!.drawImage(bmp, 0, 0, width, height);
-  bmp.close();
-  const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.85));
-  if (!blob) throw new Error("bitmap");
-  return { blob };
-}
-
-async function upload(recipeId: string, file: File, kind: Kind, sortOrder: number) {
-  const { blob } = await compress(file, kind);
-  // Tanda tangan dibuat server; secret Cloudinary tidak pernah sampai ke browser.
-  const sign = await (await fetch("/api/photos/sign", { method: "POST" })).json();
-  const form = new FormData();
-  form.set("file", blob);
-  form.set("api_key", sign.apiKey);
-  form.set("timestamp", String(sign.timestamp));
-  form.set("signature", sign.signature);
-  form.set("folder", sign.folder);
-  const up = await fetch(`https://api.cloudinary.com/v1_1/${sign.cloudName}/image/upload`, { method: "POST", body: form });
-  if (!up.ok) throw new Error("cloudinary");
-  const done = await up.json();
-  const reg = await fetch("/api/photos", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ recipeId, kind, publicId: done.public_id, width: done.width, height: done.height, sortOrder }),
-  });
-  if (!reg.ok) throw new Error("register");
-}
 
 export function PhotoManager({ recipeId, photos }: { recipeId: string; photos: ManagedPhoto[] }) {
   const router = useRouter();
@@ -74,7 +38,7 @@ export function PhotoManager({ recipeId, photos }: { recipeId: string; photos: M
     try {
       for (const [i, file] of [...files].entries()) {
         setProgress(`Mengunggah foto ${i + 1} dari ${files.length}...`);
-        await upload(recipeId, file, kind, photos.length + i);
+        await uploadPhoto(file, { recipeId, kind, maxSide: MAX_SIDE[kind], sortOrder: photos.length + i });
         sent++;
       }
       setOk(sent === 1 ? "Foto tersimpan" : `${sent} foto tersimpan`);

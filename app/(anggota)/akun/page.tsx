@@ -5,6 +5,7 @@ import { logout } from "@/app/login/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FONT_SIZE, requireUser } from "@/lib/member";
+import { TourButton } from "../product-tour";
 import { setFontSize } from "./actions";
 import { InstallApp } from "./install-app";
 
@@ -32,6 +33,8 @@ export default async function Akun({ searchParams }: { searchParams: Promise<{ o
       </Card>
 
       <InstallApp />
+
+      <TourButton />
 
       <Card>
         <CardHeader><CardTitle className="font-display text-2xl font-semibold">Ukuran huruf</CardTitle></CardHeader>

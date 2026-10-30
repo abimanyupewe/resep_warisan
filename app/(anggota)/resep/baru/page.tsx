@@ -21,7 +21,7 @@ export default async function ResepBaru() {
         id={null}
         categories={categories}
         people={people}
-        initial={{ title: "", categoryId: "", ownerPersonId: "", ingredientsText: "", stepsText: "", originStory: "", memoryNote: "", servings: "", cookTime: "", difficulty: "", status: "draf" }}
+        initial={{ title: "", categoryId: "", ownerPersonId: "", ingredientsText: "", stepsText: "", originStory: "", memoryNote: "", servings: "", cookTime: "", difficulty: "" }}
       />
     </main>
   );

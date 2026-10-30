@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, History, House, Plus, UserRound } from "lucide-react";
+import { BookMarked, BookOpen, History, House, Plus, UserRound } from "lucide-react";
 
-// Menu "Buku" (PDF) menyusul saat fitur ekspor dibuat.
 const ITEMS = [
   ["/beranda", "Beranda", House],
   ["/resep", "Resep", BookOpen],
   ["/riwayat", "Riwayat", History],
+  ["/buku", "Buku", BookMarked],
   ["/resep/baru", "Tambah", Plus],
   ["/akun", "Akun", UserRound],
 ] as const;

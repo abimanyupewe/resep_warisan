@@ -28,7 +28,7 @@ export default async function UbahResep(props: PageProps<"/resep/[id]/ubah">) {
         initial={{
           title: r.title, categoryId: r.categoryId ?? "", ownerPersonId: r.ownerPersonId ?? "", ingredientsText: r.ingredientsText ?? "",
           stepsText: r.stepsText ?? "", originStory: r.originStory ?? "", memoryNote: r.memoryNote ?? "", servings: r.servings ?? "",
-          cookTime: r.cookTime ?? "", difficulty: r.difficulty ?? "", status: r.status,
+          cookTime: r.cookTime ?? "", difficulty: r.difficulty ?? "",
         }}
       />
     </main>
